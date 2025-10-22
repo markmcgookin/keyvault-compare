@@ -66,14 +66,11 @@
         <div id="status" class="status" style="display: none;"></div>
         
         <div class="comparison">
-            <div class="vault-pane">
-                <div class="vault-title">📤 Source Vault Secrets</div>
-                <div id="sourceSecrets" class="secret-list" role="region" aria-label="Source vault secrets"></div>
+            <div class="comparison-header">
+                <div class="vault-title">📤 Source Vault</div>
+                <div class="vault-title">📥 Target Vault</div>
             </div>
-            <div class="vault-pane">
-                <div class="vault-title">📥 Target Vault Secrets</div>
-                <div id="targetSecrets" class="secret-list" role="region" aria-label="Target vault secrets"></div>
-            </div>
+            <div id="unifiedSecrets" class="unified-secret-list" role="region" aria-label="Unified secret comparison"></div>
         </div>
         
         <div class="actions">

@@ -99,13 +99,6 @@ button:active {
 }
 
 .comparison {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    margin-bottom: 32px;
-}
-
-.vault-pane {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 12px;
     padding: 24px;
@@ -115,86 +108,110 @@ button:active {
     transition: all 0.3s ease;
 }
 
-.vault-pane:hover {
+.comparison:hover {
     transform: translateY(-2px);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
 
-.vault-title {
-    font-size: 1.25rem;
-    font-weight: 700;
+.comparison-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
     margin-bottom: 20px;
-    text-align: center;
-    color: #ffffff;
     padding-bottom: 12px;
     border-bottom: 2px solid rgba(255, 255, 255, 0.1);
 }
 
-.secret-list {
+.comparison-header .vault-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-align: center;
+    color: #ffffff;
+    margin: 0;
+}
+
+.unified-secret-list {
     max-height: 600px;
     overflow-y: auto;
     padding-right: 8px;
 }
 
-.secret-list::-webkit-scrollbar {
+.unified-secret-list::-webkit-scrollbar {
     width: 6px;
 }
 
-.secret-list::-webkit-scrollbar-track {
+.unified-secret-list::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.1);
     border-radius: 3px;
 }
 
-.secret-list::-webkit-scrollbar-thumb {
+.unified-secret-list::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.3);
     border-radius: 3px;
 }
 
-.secret-list::-webkit-scrollbar-thumb:hover {
+.unified-secret-list::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.5);
 }
 
-.secret-item {
-    padding: 16px;
+.secret-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
     margin: 8px 0;
     border-radius: 8px;
-    border-left: 4px solid;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    min-height: 70px;
     transition: all 0.2s ease;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.05);
+    overflow: hidden;
 }
 
-.secret-item:hover {
+.secret-row:hover {
     transform: translateX(4px);
     background: rgba(255, 255, 255, 0.08);
 }
 
-.secret-item.match { 
+.secret-cell {
+    padding: 16px;
+    min-height: 70px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+}
+
+.secret-cell.source-cell {
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.secret-cell.target-cell {
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.secret-cell.empty {
+    opacity: 0.3;
+    background: rgba(255, 255, 255, 0.02);
+    border-style: dashed;
+}
+
+.secret-cell.match {
     background: linear-gradient(135deg, rgba(76, 175, 80, 0.15) 0%, rgba(76, 175, 80, 0.05) 100%);
     border-color: #4caf50;
-    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
 }
 
-.secret-item.different { 
+.secret-cell.different {
     background: linear-gradient(135deg, rgba(255, 152, 0, 0.15) 0%, rgba(255, 152, 0, 0.05) 100%);
     border-color: #ff9800;
-    box-shadow: 0 2px 8px rgba(255, 152, 0, 0.2);
 }
 
-.secret-item.target-only { 
-    background: linear-gradient(135deg, rgba(244, 67, 54, 0.15) 0%, rgba(244, 67, 54, 0.05) 100%);
-    border-color: #f44336;
-    box-shadow: 0 2px 8px rgba(244, 67, 54, 0.2);
-}
-
-.secret-item.source-only { 
+.secret-cell.source-only {
     background: linear-gradient(135deg, rgba(33, 150, 243, 0.15) 0%, rgba(33, 150, 243, 0.05) 100%);
     border-color: #2196f3;
-    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.2);
+}
+
+.secret-cell.target-only {
+    background: linear-gradient(135deg, rgba(244, 67, 54, 0.15) 0%, rgba(244, 67, 54, 0.05) 100%);
+    border-color: #f44336;
 }
 
 .secret-name {
@@ -351,8 +368,19 @@ button:active {
     }
     
     .comparison {
-        grid-template-columns: 1fr;
+        padding: 16px;
+    }
+    
+    .comparison-header {
         gap: 16px;
+    }
+    
+    .secret-row {
+        gap: 16px;
+    }
+    
+    .secret-cell {
+        padding: 12px;
     }
     
     .controls {
@@ -377,11 +405,6 @@ button:active {
         padding: 16px;
     }
     
-    .secret-item {
-        padding: 12px;
-        margin: 6px 0;
-    }
-    
     .sync-btn {
         margin-left: 8px;
         padding: 6px 12px;
@@ -398,20 +421,33 @@ button:active {
         font-size: 1.5rem;
     }
     
-    .vault-pane {
-        padding: 16px;
+    .comparison {
+        padding: 12px;
     }
     
-    .secret-item {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
+    .comparison-header {
+        gap: 12px;
+    }
+    
+    .comparison-header .vault-title {
+        font-size: 1rem;
+    }
+    
+    .secret-row {
+        gap: 12px;
+        margin: 6px 0;
+    }
+    
+    .secret-cell {
+        padding: 10px;
+        min-height: 60px;
     }
     
     .sync-btn {
         margin-left: 0;
         align-self: stretch;
         text-align: center;
+        padding: 8px 12px;
     }
 }
 

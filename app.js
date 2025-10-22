@@ -120,12 +120,12 @@ async function loadSecrets(vaultName, isSource) {
         if (isSource) {
             sourceSecrets = data.secrets;
             sourceMetadata = data.metadata;
-            updateSourceDisplay();
+            updateUnifiedDisplay();
             showStatus(`Loaded ${Object.keys(sourceSecrets).length} secrets from source vault`, 'success');
         } else {
             targetSecrets = data.secrets;
             targetMetadata = data.metadata;
-            updateTargetDisplay();
+            updateUnifiedDisplay();
             showStatus(`Loaded ${Object.keys(targetSecrets).length} secrets from target vault`, 'success');
         }
     } catch (error) {
@@ -133,57 +133,74 @@ async function loadSecrets(vaultName, isSource) {
     }
 }
 
-function updateSourceDisplay() {
-    const container = document.getElementById('sourceSecrets');
-    container.innerHTML = '';
-    
-    Object.entries(sourceSecrets).forEach(([name, value], index) => {
-        const item = createSecretItem(name, value, sourceMetadata[name], 'source');
-        item.style.animationDelay = `${index * 0.05}s`;
-        item.classList.add('slide-in');
-        container.appendChild(item);
-    });
-}
-
-function updateTargetDisplay() {
-    const container = document.getElementById('targetSecrets');
+function updateUnifiedDisplay() {
+    const container = document.getElementById('unifiedSecrets');
     container.innerHTML = '';
     
     const allSecrets = new Set([...Object.keys(sourceSecrets), ...Object.keys(targetSecrets)]);
+    const sortedSecrets = Array.from(allSecrets).sort();
     
-    Array.from(allSecrets).sort().forEach((name, index) => {
-        if (targetSecrets[name]) {
-            const value = targetSecrets[name];
-            const metadata = targetMetadata[name];
-            
-            let className = 'match';
-            if (sourceSecrets[name]) {
-                if (sourceSecrets[name] !== value) {
-                    className = 'different';
-                }
-            } else {
-                className = 'target-only';
-            }
-            
-            const item = createSecretItem(name, value, metadata, 'target', className);
-            item.style.animationDelay = `${index * 0.05}s`;
-            item.classList.add('slide-in');
-            container.appendChild(item);
-        } else if (sourceSecrets[name]) {
-            const value = sourceSecrets[name];
-            const metadata = sourceMetadata[name];
-            const item = createSecretItem(name, value, metadata, 'source-only', 'source-only');
-            item.style.animationDelay = `${index * 0.05}s`;
-            item.classList.add('slide-in');
-            container.appendChild(item);
-        }
+    sortedSecrets.forEach((name, index) => {
+        const row = createUnifiedSecretRow(name, index);
+        container.appendChild(row);
     });
 }
 
-function createSecretItem(name, value, metadata, type, className = '') {
-    const item = document.createElement('div');
-    item.className = `secret-item ${className}`;
+function createUnifiedSecretRow(name, index) {
+    const row = document.createElement('div');
+    row.className = 'secret-row';
+    row.style.animationDelay = `${index * 0.05}s`;
+    row.classList.add('slide-in');
     
+    // Create source cell
+    const sourceCell = document.createElement('div');
+    sourceCell.className = 'secret-cell source-cell';
+    
+    // Create target cell
+    const targetCell = document.createElement('div');
+    targetCell.className = 'secret-cell target-cell';
+    
+    // Determine the state and populate cells
+    const hasSource = sourceSecrets[name];
+    const hasTarget = targetSecrets[name];
+    
+    if (hasSource && hasTarget) {
+        // Both exist - check if they match
+        if (sourceSecrets[name] === targetSecrets[name]) {
+            sourceCell.classList.add('match');
+            targetCell.classList.add('match');
+        } else {
+            sourceCell.classList.add('different');
+            targetCell.classList.add('different');
+        }
+        
+        populateSecretCell(sourceCell, name, sourceSecrets[name], sourceMetadata[name], 'source');
+        populateSecretCell(targetCell, name, targetSecrets[name], targetMetadata[name], 'target');
+        
+    } else if (hasSource && !hasTarget) {
+        // Source only
+        sourceCell.classList.add('source-only');
+        targetCell.classList.add('empty');
+        
+        populateSecretCell(sourceCell, name, sourceSecrets[name], sourceMetadata[name], 'source');
+        populateEmptyCell(targetCell, name);
+        
+    } else if (!hasSource && hasTarget) {
+        // Target only
+        sourceCell.classList.add('empty');
+        targetCell.classList.add('target-only');
+        
+        populateEmptyCell(sourceCell, name);
+        populateSecretCell(targetCell, name, targetSecrets[name], targetMetadata[name], 'target');
+    }
+    
+    row.appendChild(sourceCell);
+    row.appendChild(targetCell);
+    
+    return row;
+}
+
+function populateSecretCell(cell, name, value, metadata, type) {
     const showSecrets = document.getElementById('showSecrets').checked;
     const showMetadata = document.getElementById('showMetadata').checked;
     
@@ -191,39 +208,48 @@ function createSecretItem(name, value, metadata, type, className = '') {
     let metaStr = '';
     
     if (showMetadata && metadata) {
-        metaStr = ` | Created: ${metadata.created ? metadata.created.substring(0, 10) : 'N/A'}`;
-        metaStr += ` | Modified: ${metadata.modified ? metadata.modified.substring(0, 10) : 'N/A'}`;
+        metaStr = `\nCreated: ${metadata.created || 'Unknown'}\nModified: ${metadata.modified || 'Unknown'}`;
         if (metadata.expires) {
-            metaStr += ` | Expires: ${metadata.expires.substring(0, 10)}`;
+            metaStr += `\nExpires: ${metadata.expires}`;
+        }
+        if (metadata.tags && Object.keys(metadata.tags).length > 0) {
+            metaStr += `\nTags: ${JSON.stringify(metadata.tags)}`;
         }
     }
     
-    const content = document.createElement('div');
-    content.className = 'secret-content';
-    content.innerHTML = `
-        <div class="secret-name">${name}</div>
-        <div class="secret-value">${displayValue}${metaStr}</div>
+    cell.innerHTML = `
+        <div class="secret-content">
+            <div class="secret-name">${name}</div>
+            <div class="secret-value">${displayValue}${metaStr}</div>
+        </div>
+        ${getSyncButton(name, type)}
     `;
+}
+
+function populateEmptyCell(cell, name) {
+    cell.innerHTML = `
+        <div class="secret-content">
+            <div class="secret-name" style="opacity: 0.5;">${name}</div>
+            <div class="secret-value" style="opacity: 0.3; font-style: italic;">No secret found</div>
+        </div>
+    `;
+}
+
+function getSyncButton(name, type) {
+    const hasSource = sourceSecrets[name];
+    const hasTarget = targetSecrets[name];
     
-    item.appendChild(content);
-    
-    // Add sync button for secrets that need syncing
-    if (type === 'target' && sourceSecrets[name] && sourceSecrets[name] !== value) {
-        // Different values - sync button
-        const syncBtn = document.createElement('button');
-        syncBtn.className = 'sync-btn';
-        syncBtn.textContent = 'Sync';
-        syncBtn.onclick = () => syncSecret(name);
-        item.appendChild(syncBtn);
-    } else if (type === 'source-only') {
-        // Missing in target - add sync button
-        const syncBtn = document.createElement('button');
-        syncBtn.className = 'sync-btn';
-        syncBtn.textContent = 'Add to Target';
-        syncBtn.onclick = () => syncSecret(name);
-        item.appendChild(syncBtn);
+    if (hasSource && hasTarget) {
+        // Both exist - check if they match
+        if (sourceSecrets[name] !== targetSecrets[name]) {
+            return `<button class="sync-btn" onclick="syncSecret('${name}')">Sync</button>`;
+        }
+    } else if (hasSource && !hasTarget) {
+        // Source only - add to target
+        return `<button class="sync-btn" onclick="syncSecret('${name}')">Add to Target</button>`;
     }
-    return item;
+    
+    return '';
 }
 
 async function syncSecret(secretName) {
@@ -337,13 +363,13 @@ function importVault() {
 }
 
 function toggleSecrets() {
-    updateSourceDisplay();
-    updateTargetDisplay();
+    updateUnifiedDisplay();
+    updateUnifiedDisplay();
 }
 
 function toggleMetadata() {
-    updateSourceDisplay();
-    updateTargetDisplay();
+    updateUnifiedDisplay();
+    updateUnifiedDisplay();
 }
 
 function showStatus(message, type) {
