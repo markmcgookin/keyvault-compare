@@ -296,7 +296,14 @@ async function syncSecret(secretName) {
         
         if (result.success) {
             showStatus(`Secret ${secretName} synced successfully`, 'success');
-            loadSecrets(targetVault, false);
+            
+            // Update the local data with the synced value
+            targetSecrets[secretName] = sourceSecrets[secretName];
+            
+            // Refresh only the specific row that was synced
+            setTimeout(() => {
+                refreshSecretRow(secretName);
+            }, 100);
         } else {
             showStatus(`Failed to sync secret ${secretName}: ${result.error || 'Unknown error'}`, 'error');
         }
@@ -375,12 +382,12 @@ async function saveEditSecret(secretName) {
             
             // Update the local data
             targetSecrets[secretName] = newValue;
-            if (result.metadata) {
-                targetMetadata[secretName] = result.metadata;
-            }
             
-            // Refresh the display
-            updateUnifiedDisplay();
+            // Refresh only the specific row that was edited
+            // Small delay to ensure backend processing is complete
+            setTimeout(() => {
+                refreshSecretRow(secretName);
+            }, 100);
         } else {
             showStatus(`Failed to update secret ${secretName}: ${result.error || 'Unknown error'}`, 'error');
             cancelEditSecret(secretName);
@@ -389,6 +396,37 @@ async function saveEditSecret(secretName) {
         showStatus(`Failed to update secret ${secretName}: ` + error.message, 'error');
         cancelEditSecret(secretName);
     }
+}
+
+// Function to refresh only a specific secret row
+function refreshSecretRow(secretName) {
+    // Find the existing row by looking for the secret name in the row
+    const allRows = document.querySelectorAll('.secret-row');
+    let existingRow = null;
+    
+    for (let row of allRows) {
+        const secretNameElement = row.querySelector('.secret-name');
+        if (secretNameElement && secretNameElement.textContent === secretName) {
+            existingRow = row;
+            break;
+        }
+    }
+    
+    if (!existingRow) {
+        console.log('Could not find row for secret:', secretName);
+        return;
+    }
+    
+    // Get the row index for animation delay
+    const rowIndex = Array.from(allRows).indexOf(existingRow);
+    
+    // Create the new row
+    const newRow = createUnifiedSecretRow(secretName, rowIndex);
+    
+    // Replace the old row with the new one
+    existingRow.parentNode.replaceChild(newRow, existingRow);
+    
+    console.log('Refreshed row for secret:', secretName);
 }
 
 async function syncAll() {

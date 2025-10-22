@@ -313,22 +313,11 @@ class WebHandler(BaseHTTPRequestHandler):
             client = SecretClient(vault_url=vault_url, credential=self.comparator.credential)
             
             # Set the secret (this will create or update it)
-            secret_properties = client.set_secret(secret_name, new_value)
-            
-            # Get updated metadata
-            metadata = {
-                'created': secret_properties.created_on.isoformat() if secret_properties.created_on else None,
-                'modified': secret_properties.updated_on.isoformat() if secret_properties.updated_on else None,
-                'version': secret_properties.version,
-                'enabled': secret_properties.enabled,
-                'expires': secret_properties.expires_on.isoformat() if secret_properties.expires_on else None,
-                'tags': secret_properties.tags or {}
-            }
+            client.set_secret(secret_name, new_value)
             
             self.send_json_response({
                 'success': True, 
-                'message': f'Secret {secret_name} updated successfully',
-                'metadata': metadata
+                'message': f'Secret {secret_name} updated successfully'
             })
             
         except Exception as e:
