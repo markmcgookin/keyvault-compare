@@ -137,8 +137,10 @@ function updateSourceDisplay() {
     const container = document.getElementById('sourceSecrets');
     container.innerHTML = '';
     
-    Object.entries(sourceSecrets).forEach(([name, value]) => {
+    Object.entries(sourceSecrets).forEach(([name, value], index) => {
         const item = createSecretItem(name, value, sourceMetadata[name], 'source');
+        item.style.animationDelay = `${index * 0.05}s`;
+        item.classList.add('slide-in');
         container.appendChild(item);
     });
 }
@@ -149,7 +151,7 @@ function updateTargetDisplay() {
     
     const allSecrets = new Set([...Object.keys(sourceSecrets), ...Object.keys(targetSecrets)]);
     
-    Array.from(allSecrets).sort().forEach(name => {
+    Array.from(allSecrets).sort().forEach((name, index) => {
         if (targetSecrets[name]) {
             const value = targetSecrets[name];
             const metadata = targetMetadata[name];
@@ -164,11 +166,15 @@ function updateTargetDisplay() {
             }
             
             const item = createSecretItem(name, value, metadata, 'target', className);
+            item.style.animationDelay = `${index * 0.05}s`;
+            item.classList.add('slide-in');
             container.appendChild(item);
         } else if (sourceSecrets[name]) {
             const value = sourceSecrets[name];
             const metadata = sourceMetadata[name];
             const item = createSecretItem(name, value, metadata, 'source-only', 'source-only');
+            item.style.animationDelay = `${index * 0.05}s`;
+            item.classList.add('slide-in');
             container.appendChild(item);
         }
     });
@@ -345,17 +351,21 @@ function showStatus(message, type) {
     status.textContent = message;
     status.style.display = 'block';
     
-    if (type === 'success') {
-        status.style.backgroundColor = '#1a4d1a';
-    } else if (type === 'error') {
-        status.style.backgroundColor = '#4d1a1a';
-    } else if (type === 'info') {
-        status.style.backgroundColor = '#1a3d4d';
+    // Remove existing type classes
+    status.classList.remove('info', 'success', 'error');
+    
+    // Add new type class
+    if (type) {
+        status.classList.add(type);
     }
+    
+    // Add fade-in animation
+    status.classList.add('fade-in');
     
     setTimeout(() => {
         status.style.display = 'none';
-    }, 3000);
+        status.classList.remove('fade-in');
+    }, 4000);
 }
 
 // Event listeners

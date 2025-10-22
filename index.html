@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Azure Key Vault Comparator</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
@@ -14,47 +17,49 @@
         
         <div class="controls">
             <div class="control-group">
-                <label>Source Subscription:</label>
-                <select id="sourceSubscription">
+                <label for="sourceSubscription">📊 Source Subscription:</label>
+                <select id="sourceSubscription" aria-label="Select source subscription">
                     <option value="">All Subscriptions</option>
                 </select>
             </div>
             <div class="control-group">
-                <label>Source Vault:</label>
-                <select id="sourceVault">
+                <label for="sourceVault">🔐 Source Vault:</label>
+                <select id="sourceVault" aria-label="Select source vault">
                     <option value="">Select source vault...</option>
                 </select>
             </div>
             <div class="control-group">
-                <label>Target Subscription:</label>
-                <select id="targetSubscription">
+                <label for="targetSubscription">📊 Target Subscription:</label>
+                <select id="targetSubscription" aria-label="Select target subscription">
                     <option value="">All Subscriptions</option>
                 </select>
             </div>
             <div class="control-group">
-                <label>Target Vault:</label>
-                <select id="targetVault">
+                <label for="targetVault">🔐 Target Vault:</label>
+                <select id="targetVault" aria-label="Select target vault">
                     <option value="">Select target vault...</option>
                 </select>
             </div>
             <div class="control-group">
                 <label>&nbsp;</label>
-                <button onclick="refreshAllVaults()">Refresh All</button>
+                <button onclick="refreshAllVaults()" aria-label="Refresh all vaults">
+                    🔄 Refresh All
+                </button>
             </div>
         </div>
         
         <div class="checkbox-group">
-            <label>
-                <input type="checkbox" id="showSecrets" checked onchange="toggleSecrets()">
-                Show Secrets
+            <label for="showSecrets">
+                <input type="checkbox" id="showSecrets" checked onchange="toggleSecrets()" aria-describedby="showSecretsDesc">
+                👁️ Show Secrets
             </label>
-            <label>
-                <input type="checkbox" id="showMetadata" onchange="toggleMetadata()">
-                Show Metadata
+            <label for="showMetadata">
+                <input type="checkbox" id="showMetadata" onchange="toggleMetadata()" aria-describedby="showMetadataDesc">
+                📋 Show Metadata
             </label>
-            <label>
-                <input type="checkbox" id="dryRun">
-                Dry Run Mode
+            <label for="dryRun">
+                <input type="checkbox" id="dryRun" aria-describedby="dryRunDesc">
+                🧪 Dry Run Mode
             </label>
         </div>
         
@@ -62,19 +67,25 @@
         
         <div class="comparison">
             <div class="vault-pane">
-                <div class="vault-title">Source Vault Secrets</div>
-                <div id="sourceSecrets" class="secret-list"></div>
+                <div class="vault-title">📤 Source Vault Secrets</div>
+                <div id="sourceSecrets" class="secret-list" role="region" aria-label="Source vault secrets"></div>
             </div>
             <div class="vault-pane">
-                <div class="vault-title">Target Vault Secrets</div>
-                <div id="targetSecrets" class="secret-list"></div>
+                <div class="vault-title">📥 Target Vault Secrets</div>
+                <div id="targetSecrets" class="secret-list" role="region" aria-label="Target vault secrets"></div>
             </div>
         </div>
         
         <div class="actions">
-            <button onclick="syncAll()">Sync All Changes</button>
-            <button onclick="exportVault()">Export Target Vault</button>
-            <button onclick="importVault()">Import to Target Vault</button>
+            <button onclick="syncAll()" aria-label="Sync all changes between vaults">
+                🔄 Sync All Changes
+            </button>
+            <button onclick="exportVault()" aria-label="Export target vault to JSON">
+                📤 Export Target Vault
+            </button>
+            <button onclick="importVault()" aria-label="Import vault from JSON file">
+                📥 Import to Target Vault
+            </button>
         </div>
     </div>
 
