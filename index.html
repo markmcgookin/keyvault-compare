@@ -63,6 +63,28 @@
             </label>
         </div>
         
+        <div class="filter-group">
+            <div class="filter-title">🔍 Filter Secrets:</div>
+            <div class="filter-options">
+                <label for="filter-all">
+                    <input type="radio" id="filter-all" name="secretFilter" value="all" checked onchange="applyFilter()">
+                    📋 Show All
+                </label>
+                <label for="filter-missing">
+                    <input type="radio" id="filter-missing" name="secretFilter" value="missing" onchange="applyFilter()">
+                    🔵 Missing in Target
+                </label>
+                <label for="filter-different">
+                    <input type="radio" id="filter-different" name="secretFilter" value="different" onchange="applyFilter()">
+                    🟠 Different Values
+                </label>
+                <label for="filter-identical">
+                    <input type="radio" id="filter-identical" name="secretFilter" value="identical" onchange="applyFilter()">
+                    🟢 Identical Values
+                </label>
+            </div>
+        </div>
+        
         <div id="status" class="status" style="display: none;"></div>
         
         <div class="comparison">

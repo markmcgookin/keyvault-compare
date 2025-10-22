@@ -140,10 +140,42 @@ function updateUnifiedDisplay() {
     const allSecrets = new Set([...Object.keys(sourceSecrets), ...Object.keys(targetSecrets)]);
     const sortedSecrets = Array.from(allSecrets).sort();
     
-    sortedSecrets.forEach((name, index) => {
+    // Apply filter
+    const filteredSecrets = applySecretFilter(sortedSecrets);
+    
+    filteredSecrets.forEach((name, index) => {
         const row = createUnifiedSecretRow(name, index);
         container.appendChild(row);
     });
+}
+
+function applySecretFilter(secrets) {
+    const filterValue = document.querySelector('input[name="secretFilter"]:checked').value;
+    
+    return secrets.filter(name => {
+        const hasSource = sourceSecrets[name];
+        const hasTarget = targetSecrets[name];
+        
+        switch (filterValue) {
+            case 'missing':
+                // Show secrets that exist in source but not in target
+                return hasSource && !hasTarget;
+            case 'different':
+                // Show secrets that exist in both but have different values
+                return hasSource && hasTarget && sourceSecrets[name] !== targetSecrets[name];
+            case 'identical':
+                // Show secrets that exist in both and have identical values
+                return hasSource && hasTarget && sourceSecrets[name] === targetSecrets[name];
+            case 'all':
+            default:
+                // Show all secrets
+                return true;
+        }
+    });
+}
+
+function applyFilter() {
+    updateUnifiedDisplay();
 }
 
 function createUnifiedSecretRow(name, index) {
@@ -400,24 +432,29 @@ async function saveEditSecret(secretName) {
 
 // Function to refresh only a specific secret row
 function refreshSecretRow(secretName) {
-    // Find the existing row by looking for the secret name in the row
-    const allRows = document.querySelectorAll('.secret-row');
-    let existingRow = null;
+    // Check if the secret should be visible with current filter
+    const allSecrets = new Set([...Object.keys(sourceSecrets), ...Object.keys(targetSecrets)]);
+    const sortedSecrets = Array.from(allSecrets).sort();
+    const filteredSecrets = applySecretFilter(sortedSecrets);
     
-    for (let row of allRows) {
-        const secretNameElement = row.querySelector('.secret-name');
-        if (secretNameElement && secretNameElement.textContent === secretName) {
-            existingRow = row;
-            break;
+    if (!filteredSecrets.includes(secretName)) {
+        // Secret is filtered out, remove the row if it exists
+        const existingRow = findSecretRow(secretName);
+        if (existingRow) {
+            existingRow.remove();
         }
+        return;
     }
     
+    // Find the existing row by looking for the secret name in the row
+    const existingRow = findSecretRow(secretName);
     if (!existingRow) {
         console.log('Could not find row for secret:', secretName);
         return;
     }
     
     // Get the row index for animation delay
+    const allRows = document.querySelectorAll('.secret-row');
     const rowIndex = Array.from(allRows).indexOf(existingRow);
     
     // Create the new row
@@ -427,6 +464,17 @@ function refreshSecretRow(secretName) {
     existingRow.parentNode.replaceChild(newRow, existingRow);
     
     console.log('Refreshed row for secret:', secretName);
+}
+
+function findSecretRow(secretName) {
+    const allRows = document.querySelectorAll('.secret-row');
+    for (let row of allRows) {
+        const secretNameElement = row.querySelector('.secret-name');
+        if (secretNameElement && secretNameElement.textContent === secretName) {
+            return row;
+        }
+    }
+    return null;
 }
 
 async function syncAll() {
