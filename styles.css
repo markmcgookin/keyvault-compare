@@ -214,6 +214,82 @@ button:active {
     border-color: #f44336;
 }
 
+/* Editing styles */
+.secret-cell.editing {
+    background: linear-gradient(135deg, rgba(156, 39, 176, 0.15) 0%, rgba(156, 39, 176, 0.05) 100%);
+    border-color: #9c27b0;
+}
+
+.edit-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid #9c27b0;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    font-size: 13px;
+    resize: vertical;
+    min-height: 60px;
+    margin-bottom: 8px;
+}
+
+.edit-input:focus {
+    outline: none;
+    border-color: #e1bee7;
+    box-shadow: 0 0 0 3px rgba(156, 39, 176, 0.2);
+}
+
+.edit-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.edit-btn {
+    background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(156, 39, 176, 0.3);
+}
+
+.edit-btn:hover {
+    background: linear-gradient(135deg, #7b1fa2 0%, #6a1b9a 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(156, 39, 176, 0.4);
+}
+
+.edit-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(156, 39, 176, 0.3);
+}
+
+.save-btn {
+    background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+}
+
+.save-btn:hover {
+    background: linear-gradient(135deg, #45a049 0%, #388e3c 100%);
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.4);
+}
+
+.cancel-btn {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    box-shadow: 0 2px 4px rgba(244, 67, 54, 0.3);
+}
+
+.cancel-btn:hover {
+    background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%);
+    box-shadow: 0 4px 8px rgba(244, 67, 54, 0.4);
+}
+
 .secret-name {
     font-weight: 700;
     margin-bottom: 8px;

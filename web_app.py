@@ -204,6 +204,11 @@ class WebHandler(BaseHTTPRequestHandler):
             self.handle_sync_all()
         elif self.path == '/api/export':
             self.handle_export()
+        elif self.path.startswith('/api/update-secret/'):
+            parts = self.path.split('/')
+            vault_name = parts[-2]
+            secret_name = parts[-1]
+            self.handle_update_secret(vault_name, secret_name)
         else:
             self.send_error(404)
     
@@ -289,6 +294,45 @@ class WebHandler(BaseHTTPRequestHandler):
         """Handle export request"""
         # Export functionality would go here
         pass
+    
+    def handle_update_secret(self, vault_name, secret_name):
+        """Handle updating a secret value"""
+        try:
+            # Read the request body
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            data = json.loads(post_data.decode('utf-8'))
+            
+            new_value = data.get('value')
+            if not new_value:
+                self.send_json_response({'success': False, 'error': 'No value provided'})
+                return
+            
+            # Update the secret in the vault
+            vault_url = f"https://{vault_name}.vault.azure.net/"
+            client = SecretClient(vault_url=vault_url, credential=self.comparator.credential)
+            
+            # Set the secret (this will create or update it)
+            secret_properties = client.set_secret(secret_name, new_value)
+            
+            # Get updated metadata
+            metadata = {
+                'created': secret_properties.created_on.isoformat() if secret_properties.created_on else None,
+                'modified': secret_properties.updated_on.isoformat() if secret_properties.updated_on else None,
+                'version': secret_properties.version,
+                'enabled': secret_properties.enabled,
+                'expires': secret_properties.expires_on.isoformat() if secret_properties.expires_on else None,
+                'tags': secret_properties.tags or {}
+            }
+            
+            self.send_json_response({
+                'success': True, 
+                'message': f'Secret {secret_name} updated successfully',
+                'metadata': metadata
+            })
+            
+        except Exception as e:
+            self.send_json_response({'success': False, 'error': str(e)})
     
     def send_json_response(self, data):
         """Send JSON response"""

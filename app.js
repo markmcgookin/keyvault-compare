@@ -217,12 +217,23 @@ function populateSecretCell(cell, name, value, metadata, type) {
         }
     }
     
+    // Add data attribute for editing functions
+    cell.setAttribute('data-secret-name', name);
+    
+    // Choose the appropriate button based on cell type
+    let buttonHtml = '';
+    if (type === 'target') {
+        buttonHtml = getTargetButton(name, type);
+    } else {
+        buttonHtml = getSyncButton(name, type);
+    }
+    
     cell.innerHTML = `
         <div class="secret-content">
             <div class="secret-name">${name}</div>
             <div class="secret-value">${displayValue}${metaStr}</div>
         </div>
-        ${getSyncButton(name, type)}
+        ${buttonHtml}
     `;
 }
 
@@ -247,6 +258,17 @@ function getSyncButton(name, type) {
     } else if (hasSource && !hasTarget) {
         // Source only - add to target
         return `<button class="sync-btn" onclick="syncSecret('${name}')">Add to Target</button>`;
+    }
+    
+    return '';
+}
+
+function getTargetButton(name, type) {
+    const hasTarget = targetSecrets[name];
+    
+    if (hasTarget) {
+        // Show edit button for all target cells
+        return `<button class="edit-btn" onclick="startEditSecret('${name}')">✏️ Edit</button>`;
     }
     
     return '';
@@ -280,6 +302,92 @@ async function syncSecret(secretName) {
         }
     } catch (error) {
         showStatus(`Failed to sync secret ${secretName}: ` + error.message, 'error');
+    }
+}
+
+// Editing functions
+function startEditSecret(secretName) {
+    const targetCell = document.querySelector(`[data-secret-name="${secretName}"].target-cell`);
+    if (!targetCell) return;
+    
+    const currentValue = targetSecrets[secretName] || '';
+    const showSecrets = document.getElementById('showSecrets').checked;
+    const displayValue = showSecrets ? currentValue : '***HIDDEN***';
+    
+    targetCell.classList.add('editing');
+    targetCell.innerHTML = `
+        <div class="secret-content">
+            <div class="secret-name">${secretName}</div>
+            <textarea class="edit-input" placeholder="Enter secret value...">${currentValue}</textarea>
+        </div>
+        <div class="edit-buttons">
+            <button class="edit-btn save-btn" onclick="saveEditSecret('${secretName}')">💾 Save</button>
+            <button class="edit-btn cancel-btn" onclick="cancelEditSecret('${secretName}')">❌ Cancel</button>
+        </div>
+    `;
+    
+    // Focus the textarea
+    const textarea = targetCell.querySelector('.edit-input');
+    textarea.focus();
+    textarea.select();
+}
+
+function cancelEditSecret(secretName) {
+    const targetCell = document.querySelector(`[data-secret-name="${secretName}"].target-cell`);
+    if (!targetCell) return;
+    
+    targetCell.classList.remove('editing');
+    // Restore the original content
+    populateSecretCell(targetCell, secretName, targetSecrets[secretName], targetMetadata[secretName], 'target');
+}
+
+async function saveEditSecret(secretName) {
+    const targetCell = document.querySelector(`[data-secret-name="${secretName}"].target-cell`);
+    if (!targetCell) return;
+    
+    const textarea = targetCell.querySelector('.edit-input');
+    const newValue = textarea.value.trim();
+    
+    if (!newValue) {
+        showStatus('Secret value cannot be empty', 'error');
+        return;
+    }
+    
+    const targetVault = document.getElementById('targetVault').value;
+    if (!targetVault) {
+        showStatus('Please select a target vault first', 'error');
+        return;
+    }
+    
+    try {
+        showStatus('Saving secret...', 'info');
+        
+        const response = await fetch(`/api/update-secret/${targetVault}/${secretName}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ value: newValue })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showStatus(`Secret ${secretName} updated successfully`, 'success');
+            
+            // Update the local data
+            targetSecrets[secretName] = newValue;
+            if (result.metadata) {
+                targetMetadata[secretName] = result.metadata;
+            }
+            
+            // Refresh the display
+            updateUnifiedDisplay();
+        } else {
+            showStatus(`Failed to update secret ${secretName}: ${result.error || 'Unknown error'}`, 'error');
+            cancelEditSecret(secretName);
+        }
+    } catch (error) {
+        showStatus(`Failed to update secret ${secretName}: ` + error.message, 'error');
+        cancelEditSecret(secretName);
     }
 }
 
