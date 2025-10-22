@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azure Key Vault Comparator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Azure Key Vault Comparator</h1>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>Source Subscription:</label>
+                <select id="sourceSubscription">
+                    <option value="">All Subscriptions</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Source Vault:</label>
+                <select id="sourceVault">
+                    <option value="">Select source vault...</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Target Subscription:</label>
+                <select id="targetSubscription">
+                    <option value="">All Subscriptions</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Target Vault:</label>
+                <select id="targetVault">
+                    <option value="">Select target vault...</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>&nbsp;</label>
+                <button onclick="refreshAllVaults()">Refresh All</button>
+            </div>
+        </div>
+        
+        <div class="checkbox-group">
+            <label>
+                <input type="checkbox" id="showSecrets" checked onchange="toggleSecrets()">
+                Show Secrets
+            </label>
+            <label>
+                <input type="checkbox" id="showMetadata" onchange="toggleMetadata()">
+                Show Metadata
+            </label>
+            <label>
+                <input type="checkbox" id="dryRun">
+                Dry Run Mode
+            </label>
+        </div>
+        
+        <div id="status" class="status" style="display: none;"></div>
+        
+        <div class="comparison">
+            <div class="vault-pane">
+                <div class="vault-title">Source Vault Secrets</div>
+                <div id="sourceSecrets" class="secret-list"></div>
+            </div>
+            <div class="vault-pane">
+                <div class="vault-title">Target Vault Secrets</div>
+                <div id="targetSecrets" class="secret-list"></div>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <button onclick="syncAll()">Sync All Changes</button>
+            <button onclick="exportVault()">Export Target Vault</button>
+            <button onclick="importVault()">Import to Target Vault</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
